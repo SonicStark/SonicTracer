@@ -1,0 +1,6 @@
+# Everything in this folder
+*
+*/
+# but these files
+!KIT_DIR_TREE
+!.gitignore

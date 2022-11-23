@@ -1,0 +1,5 @@
+This is a folder that needs to be completed by users themselves. It is used to deploy a downloaded release of [Pin - A Dynamic Binary Instrumentation Tool](http://pintool.intel.com) for being called from somewhere. 
+
+According to currently latest [Pin 3.25 User Guide](https://software.intel.com/sites/landingpage/pintool/docs/98650/Pin/doc/html/index.html#BUILDINGTOOLS), we are using *Building a Tool Out of the Kit Directory Tree*. The string in `KIT_DIR_TREE` points to the name of *Kit Directory Tree* in this directory and it may need to be modified according to user needs. Please note that this file is not strictly checked when it is read and used, so users should be aware of potential security problems.
+
+> *Pin is provided and supported by Intel, free of charge for any type of use, under the terms of the Intel Simplified Software License (ISSL). All source code contained in the Pin kit, including scripts, sample code and headers, is governed by the MIT license.*

@@ -2,5 +2,6 @@
 *
 */
 # but these files
+!README.md
 !KIT_DIR_TREE
 !.gitignore

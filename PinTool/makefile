@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2004-2013 Intel Corporation.
+# Copyright (C) 2012-2013 Intel Corporation.
 # SPDX-License-Identifier: MIT
 #
 

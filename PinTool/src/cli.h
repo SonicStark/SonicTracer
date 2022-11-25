@@ -6,6 +6,9 @@
 #include <string>
 #include <vector>
 
+void disp_usage();
+std::string GetUpper(const std::string &str);
+
 INT32 init_cli();
 void fini_files();
 

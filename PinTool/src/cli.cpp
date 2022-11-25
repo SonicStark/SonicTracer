@@ -43,7 +43,8 @@ KNOB<std::string> KNOB_TrCutName(
     "", //set default value
     "Specify a series of function names whose "
     "all instruction addresses would be screened. "
-    "Please append ';' at the end of each name for separation."
+    "Please append ';' at the end of each name for separation. "
+    "Both reading names and finding matches are case insensitive."
 );
 
 /**
@@ -69,6 +70,16 @@ KNOB<std::string> KNOB_TrScaType(
 void disp_usage(){
     std::cerr << "TracerCore - a Pintool which produces the trace you need." << std::endl;
     std::cerr << std::endl << KNOB_BASE::StringKnobSummary() << std::endl;
+}
+
+/**
+ * Convert each single byte character in the string to uppercase
+ * @return A new string with all single byte characters in uppercase.
+ */
+std::string GetUpper(const std::string &stri){
+    std::string aupper;
+    std::transform(stri.begin(), stri.end(), std::back_inserter(aupper), ::toupper);
+    return aupper;
 }
 
 // Global Variable
@@ -105,7 +116,7 @@ INT32 init_TrCut(){
         std::istringstream iss(tcn);
         std::string tmps;
         while (std::getline(iss, tmps, ';'))
-            { TrCut.push_back(tmps); }
+            { TrCut.push_back(GetUpper(tmps)); }
         return GOOD_ARG;
     }
 }

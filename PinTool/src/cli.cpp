@@ -1,34 +1,60 @@
 #include "cli.h"
 #include "amsg.h"
 #include <iostream>
+#include <sstream>
 
-KNOB <std::string> KNOB_TrDatPath(
-    KNOB_MODE::KNOB_MODE_WRITEONCE,
+/**
+ * Command line option '-TrDatPath'
+ * Must be explicitly specified as a writable file path.
+ * WARNNING: 
+ * If nothing is specified or contains non-existent folder, 
+ * `TraceCore` will exit immediately.
+ */
+KNOB<std::string> KNOB_TrDatPath(
+    KNOB_MODE_WRITEONCE,
     "TraceCoreCli",
     "TrDatPath",
     "", //set default value
     "Specify the path of output trace file."
 );
 
-KNOB <std::string> KNOB_TrSymPath(
-    KNOB_MODE::KNOB_MODE_WRITEONCE,
+/**
+ * Command line option '-TrSymPath'
+ * If not specified, no trace symbol file will be generated.
+ * Otherwise a non-writable file path will make
+ * `TraceCore` exit immediately.
+ */
+KNOB<std::string> KNOB_TrSymPath(
+    KNOB_MODE_WRITEONCE,
     "TraceCoreCli",
     "TrSymPath",
     "", //set default value
     "Specify the path of output trace symbol file."
 );
 
-KNOB <std::string> KNOB_TrCutName(
-    KNOB_MODE::KNOB_MODE_WRITEONCE,
+/**
+ * Command line option '-TrCutName'
+ * If not specified, the filter feature will be disabled.
+ */
+KNOB<std::string> KNOB_TrCutName(
+    KNOB_MODE_WRITEONCE,
     "TraceCoreCli",
     "TrCutName",
     "", //set default value
     "Specify a series of function names whose "
     "all instruction addresses would be screened. "
+    "Please append ';' at the end of each name for separation."
 );
 
-KNOB <std::string> KNOB_TrScaType(
-    KNOB_MODE::KNOB_MODE_WRITEONCE,
+/**
+ * Command line option '-TrScaType'
+ * 'Sca' means 'Scale' and
+ * 'ins' => function call level
+ * 'bbl' => basic block level
+ * 'cal' => instruction level
+ */
+KNOB<std::string> KNOB_TrScaType(
+    KNOB_MODE_WRITEONCE,
     "TraceCoreCli",
     "TrScaType",
     "bbl", //set default value
@@ -36,14 +62,27 @@ KNOB <std::string> KNOB_TrScaType(
     "Must be 'ins' or 'bbl' or 'cal'."
 );
 
+/**
+ * Print out a summary of all command line options
+ * WARNNING: They will be in `stderr` rather than `stdout`
+ */
 void disp_usage(){
     std::cerr << "TracerCore - a Pintool which produces the trace you need." << std::endl;
     std::cerr << std::endl << KNOB_BASE::StringKnobSummary() << std::endl;
 }
 
+// Global Variable
+// Store the granularity level of execution trace.
+// TL_INS => function call level
+// TL_BBL => basic block level
+// TL_CAL => instruction level
 INT32 TrSca = TL_BBL;
+/**
+ * Initialize the value of `TrSca`
+ * @return Whether the specified value is applied successfully
+ */
 INT32 init_TrSca(){
-    const std::string __sca = KNOB_TrScaType.ValueString();
+    const std::string __sca = KNOB_TrScaType.Value();
     if      (__sca.compare("ins")) { TrSca = TL_INS; }
     else if (__sca.compare("bbl")) { TrSca = TL_BBL; }
     else if (__sca.compare("cal")) { TrSca = TL_CAL; }
@@ -51,10 +90,73 @@ INT32 init_TrSca(){
     return GOOD_ARG;
 }
 
+// Global Variable
+// Store the names from KNOB_TrCutName.
 std::vector<std::string> TrCut;
+/**
+ * Initialize the value of `TrCut`
+ * @return Always `GOOD_ARG`
+ */
 INT32 init_TrCut(){
-
+    TrCut.clear();
+    const std::string tcn = KNOB_TrCutName.Value();
+    if (0 == tcn.size()) { return GOOD_ARG; }
+    else {
+        std::istringstream iss(tcn);
+        std::string tmps;
+        while (std::getline(iss, tmps, ';'))
+            { TrCut.push_back(tmps); }
+        return GOOD_ARG;
+    }
 }
 
+// Global Variable
+// iostream against trace file
 std::ofstream TrDat;
+/**
+ * Initialize the iostream against trace file
+ * @return `GOOD_ARG` for success or `EVIL_ARG` for failed `open`
+ */
+INT32 init_TrDat(){
+    TrDat.open(KNOB_TrDatPath.Value(), std::ios::out|std::ios::trunc);
+    if (TrDat.is_open()) { return GOOD_ARG; }
+    else { return EVIL_ARG; }
+}
+
+// Global Variable
+// iostream against trace symbol file
 std::ofstream TrSym;
+/**
+ * Initialize the iostream against trace symbol file
+ * @return `GOOD_ARG` for no trace symbol file output or successful `open`.
+ *         `EVIL_ARG` for a failed `open` call.
+ */
+INT32 init_TrSym(){
+    const std::string tsp = KNOB_TrSymPath.Value();
+    if (0 == tsp.size()) { return GOOD_ARG; }
+    else {
+        TrSym.open(tsp, std::ios::out|std::ios::trunc);
+        if (TrSym.is_open()) { return GOOD_ARG; }
+        else { return EVIL_ARG; }
+    }
+}
+
+/**
+ * Initialize the value of `TrCut`
+ * @return 0 for success or a negative integer
+ *         whose absolute value represents the
+ *         number of failed `open` operations.
+ */
+INT32 init_cli(){
+    init_TrSca();
+    init_TrCut();
+    return init_TrDat() + init_TrSym();
+}
+
+/**
+ * Close those file streams if they are not closed
+ */
+void fini_files(){
+    if (TrDat.is_open()) { TrDat.close(); }
+    if (TrSym.is_open()) { TrSym.close(); }
+}

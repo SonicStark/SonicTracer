@@ -7,6 +7,7 @@
 #include <vector>
 
 INT32 init_cli();
+void fini_files();
 
 extern std::ofstream            TrDat;
 extern std::ofstream            TrSym;

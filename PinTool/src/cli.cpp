@@ -93,10 +93,10 @@ INT32 TrSca = TL_BBL;
  * @return Whether the specified value is applied successfully
  */
 INT32 init_TrSca(){
-    const std::string __sca = KNOB_TrScaType.Value();
-    if      (__sca.compare("ins")) { TrSca = TL_INS; }
-    else if (__sca.compare("bbl")) { TrSca = TL_BBL; }
-    else if (__sca.compare("cal")) { TrSca = TL_CAL; }
+    const std::string sca = KNOB_TrScaType.Value();
+    if      (sca.compare("ins")) { TrSca = TL_INS; }
+    else if (sca.compare("bbl")) { TrSca = TL_BBL; }
+    else if (sca.compare("cal")) { TrSca = TL_CAL; }
     else { return EVIL_ARG; }
     return GOOD_ARG;
 }

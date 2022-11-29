@@ -21,28 +21,28 @@ void call_strftime(char* pBuf)
 void call_write(char* pBuf, int wlen)
 {
     printf(" => call_write_L%d", wlen); fflush(stdout);
-    for (int __i=0; __i<=wlen; __i++)
-        { pBuf[__i] = 0x88; }
+    for (int i__=0; i__<=wlen; i__++)
+        { pBuf[i__] = 0x88; }
 }
 
 void hit_HeapBufferOverflow(char* pBuf, int wlen)
 {
-    for (int __i=0; __i<=wlen; __i++)
+    for (int i__=0; i__<=wlen; i__++)
     {
         call_sprintf(pBuf);
         call_strftime(pBuf);
-        call_write(pBuf, __i);
+        call_write(pBuf, i__);
     }
 }
 
 void hit_HeapUseAfterFree(char* pBuf, int wlen)
 {
     free(pBuf);
-    for (int __i=0; __i<=wlen; __i++)
+    for (int i__=0; i__<=wlen; i__++)
     {
         call_sprintf(pBuf);
         call_strftime(pBuf);
-        call_write(pBuf, __i);
+        call_write(pBuf, i__);
     }
 }
 

@@ -11,4 +11,6 @@ bool IsBlocked(RTN               &rtni);
 inline bool IsInsideMain(ADDRINT addr);
 inline bool IsInsideMain(RTN    &rtni);
 
+extern std::vector<std::string *> SymPtrLst;
+
 #endif

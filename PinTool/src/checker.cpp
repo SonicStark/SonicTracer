@@ -1,6 +1,6 @@
 #include "checker.h"
 #include "cli.h"
-#include <string>
+#include <algorithm>
 
 /**
  * Whether the name needs to be screened.
@@ -80,16 +80,37 @@ inline bool IsInsideMain(RTN &rtni){
     );
 }
 
-// There are only limited types of parameters can be accepted by
-// an analyse routine. We should allocate some memory to place the
-// symbol string and pass the pointer to analyse routine. Also, we should
-// carefully treat our memory space to prevent sth unexpected. So we
-// use a vector to hold those pointers.
-// It's unnecessary to consider thread-safe issues for this vector
-// because Pin calls instrumentation routines while holding an internal lock.
-// Ref:
-// * https://software.intel.com/sites/landingpage/pintool/docs/98650/Pin/doc/html/group__INST__ARGS.html
-// * pin-3.25-98650-g8f6168173-gcc-linux/source/tools/SimpleExamples/calltrace.cpp #L47
-// * pin-3.25-98650-g8f6168173-gcc-linux/source/tools/SimpleExamples/trace.cpp #L72
-// * https://software.intel.com/sites/landingpage/pintool/docs/98650/Pin/doc/html/index.html#MT
-std::vector<std::string *> SymPtrLst;
+/**
+ * Interface for operating `PtrVec`
+ * @param SymStr A string waiting to be processed
+ * @return Pointer to a copy of input string that can be used continuously.
+ */
+std::string* SymPtrVector::GetSymPtr(const std::string &SymStr){
+    //try to find a available pointer
+    PtrVecIt = std::find_if(PtrVec.begin(), PtrVec.end(),
+        [](auto i__){
+            if ((*i__)->compare(SymStr)) { return true; }
+            else { return false; }
+        }
+    );
+    //return an existed one or a new one
+    if (PtrVecIt != PtrVec.end()) { return (*PtrVecIt); }
+    else {
+        std::string *pSymStr = new std::string(SymStr);
+        PtrVec.push_back(pSymStr);
+        return pSymStr;
+    }
+}
+
+/**
+ * Destructor to prevent memory leak
+ */
+SymPtrVector::~SymPtrVector(){
+    //free the memory
+    std::for_each(PtrVec.begin(), PtrVec.end(),
+        [](auto j__){ delete (*j__); });
+    //erase the vector
+    PtrVecIt = PtrVec.begin();
+    for (; PtrVecIt != PtrVecIt.end();){
+        { PtrVecIt = PtrVec.erase(PtrVecIt); }
+}

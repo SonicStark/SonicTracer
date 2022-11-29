@@ -183,3 +183,6 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# about IDE
+*.vscode*

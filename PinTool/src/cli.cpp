@@ -50,9 +50,9 @@ KNOB<std::string> KNOB_TrCutName(
 /**
  * Command line option '-TrScaType'
  * 'Sca' means 'Scale' and
- * 'ins' => function call level
- * 'bbl' => basic block level
- * 'cal' => instruction level
+ * 'ins' => instruction   level
+ * 'bbl' => basic block   level
+ * 'cal' => function call level
  */
 KNOB<std::string> KNOB_TrScaType(
     KNOB_MODE_WRITEONCE,
@@ -84,9 +84,9 @@ std::string GetUpper(const std::string &stri){
 
 // Global Variable
 // Store the granularity level of execution trace.
-// TL_INS => function call level
-// TL_BBL => basic block level
-// TL_CAL => instruction level
+// TL_INS => instruction   level
+// TL_BBL => basic block   level
+// TL_CAL => function call level
 INT32 TrSca = TL_BBL;
 /**
  * Initialize the value of `TrSca`

@@ -68,8 +68,8 @@ KNOB<std::string> KNOB_TrScaType(
  * WARNNING: They will be in `stderr` rather than `stdout`
  */
 void disp_usage(){
-    std::cerr << "TracerCore - a Pintool which produces the trace you need." << std::endl;
-    std::cerr << std::endl << KNOB_BASE::StringKnobSummary() << std::endl;
+    std::cout << "[+] TracerCore - a Pintool which produces the trace you need." << std::endl;
+    std::cout << KNOB_BASE::StringKnobSummary() << std::endl;
 }
 
 /**
@@ -153,21 +153,27 @@ INT32 init_TrSym(){
 }
 
 /**
- * Initialize the value of `TrCut`
- * @return 0 for success or a negative integer
- *         whose absolute value represents the
- *         number of failed `open` operations.
+ * Close those file streams if they are not closed
+ * @param C from default signature & unused
+ * @param V from default signature & unused
  */
-INT32 init_cli(){
-    init_TrSca();
-    init_TrCut();
-    return init_TrDat() + init_TrSym();
+FINI_CALLBACK fini_files(INT32 C, VOID *V){
+    if (TrDat.is_open()) { TrDat.close(); }
+    if (TrSym.is_open()) { TrSym.close(); }
 }
 
 /**
- * Close those file streams if they are not closed
+ * Print the ASCII Text Banner
  */
-void fini_files(){
-    if (TrDat.is_open()) { TrDat.close(); }
-    if (TrSym.is_open()) { TrSym.close(); }
+void disp_ascii_text_banner()
+{
+    using namespace std; cout << "[+] Welcome to Igor's powerful" << endl;
+    cout << "'########:'########:::::'###:::::'######::'########:'########::" << endl;
+    cout << "... ##..:: ##.... ##:::'## ##:::'##... ##: ##.....:: ##.... ##:" << endl;
+    cout << "::: ##:::: ##:::: ##::'##:. ##:: ##:::..:: ##::::::: ##:::: ##:" << endl;
+    cout << "::: ##:::: ########::'##:::. ##: ##::::::: ######::: ########::" << endl;
+    cout << "::: ##:::: ##.. ##::: #########: ##::::::: ##...:::: ##.. ##:::" << endl;
+    cout << "::: ##:::: ##::. ##:: ##.... ##: ##::: ##: ##::::::: ##::. ##::" << endl;
+    cout << "::: ##:::: ##:::. ##: ##:::: ##:. ######:: ########: ##:::. ##:" << endl;
+    cout << ":::..:::::..:::::..::..:::::..:::......:::........::..:::::..::" << endl;
 }

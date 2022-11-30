@@ -6,11 +6,16 @@
 #include <string>
 #include <vector>
 
+void disp_ascii_text_banner();
 void disp_usage();
 std::string GetUpper(const std::string &str);
 
-INT32 init_cli();
-void fini_files();
+INT32 init_TrDat();
+INT32 init_TrSym();
+INT32 init_TrCut();
+INT32 init_TrSca();
+
+FINI_CALLBACK fini_files(INT32 C, VOID *V);
 
 extern std::ofstream            TrDat;
 extern std::ofstream            TrSym;

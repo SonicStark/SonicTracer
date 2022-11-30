@@ -86,6 +86,9 @@ inline bool IsInsideMain(RTN &rtni){
  * @return Pointer to a copy of input string that can be used continuously.
  */
 std::string* SymPtrVector::GetSymPtr(const std::string &SymStr){
+    //try the last available one
+    if (PtrVecIt != PtrVec.end() && (*PtrVecIt)->compare(Symstr))
+        { return (*PtrVecIt); }
     //try to find a available pointer
     PtrVecIt = std::find_if(PtrVec.begin(), PtrVec.end(),
         [](auto i__){
@@ -100,6 +103,13 @@ std::string* SymPtrVector::GetSymPtr(const std::string &SymStr){
         PtrVec.push_back(pSymStr);
         return pSymStr;
     }
+}
+
+/**
+ * Constructor
+ */
+SymPtrVector::SymPtrVector(){
+    PtrVecIt = PtrVec.end();
 }
 
 /**

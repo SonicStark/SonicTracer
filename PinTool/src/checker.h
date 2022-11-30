@@ -32,6 +32,7 @@ class SymPtrVector
         std::vector<std::string *>::iterator PtrVecIt;
     public:
         std::string* GetSymPtr(const std::string &SymStr);
+        SymPtrVector();
         ~SymPtrVector();
 }
 

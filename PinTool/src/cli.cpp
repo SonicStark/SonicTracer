@@ -8,11 +8,11 @@
  * Must be explicitly specified as a writable file path.
  * WARNNING: 
  * If nothing is specified or contains non-existent folder, 
- * `TraceCore` will exit immediately.
+ * `TracerCore` will exit immediately.
  */
 KNOB<std::string> KNOB_TrDatPath(
     KNOB_MODE_WRITEONCE,
-    "TraceCoreCli",
+    "TracerCoreCli",
     "TrDatPath",
     "", //set default value
     "Specify the path of output trace file."
@@ -22,11 +22,11 @@ KNOB<std::string> KNOB_TrDatPath(
  * Command line option '-TrSymPath'
  * If not specified, no trace symbol file will be generated.
  * Otherwise a non-writable file path will make
- * `TraceCore` exit immediately.
+ * `TracerCore` exit immediately.
  */
 KNOB<std::string> KNOB_TrSymPath(
     KNOB_MODE_WRITEONCE,
-    "TraceCoreCli",
+    "TracerCoreCli",
     "TrSymPath",
     "", //set default value
     "Specify the path of output trace symbol file."
@@ -38,7 +38,7 @@ KNOB<std::string> KNOB_TrSymPath(
  */
 KNOB<std::string> KNOB_TrCutName(
     KNOB_MODE_WRITEONCE,
-    "TraceCoreCli",
+    "TracerCoreCli",
     "TrCutName",
     "", //set default value
     "Specify a series of function names whose "
@@ -56,7 +56,7 @@ KNOB<std::string> KNOB_TrCutName(
  */
 KNOB<std::string> KNOB_TrScaType(
     KNOB_MODE_WRITEONCE,
-    "TraceCoreCli",
+    "TracerCoreCli",
     "TrScaType",
     "bbl", //set default value
     "Specify the granularity of trace. "

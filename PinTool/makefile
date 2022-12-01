@@ -1,4 +1,7 @@
-##### The tool is built out of the kit, so locate necessary paths #####
+##### NECESSARY PATHS #####
+
+## Since the pintool is built out of the kit, locate where we are firstly.
+
 WHERE_IS_MKF := $(abspath $(lastword $(MAKEFILE_LIST)))
 WHERE_IS_DIR := $(dir $(WHERE_IS_MKF))
 
@@ -39,16 +42,24 @@ $(error missing $(CONFIG_ROOT))
 endif
 
 
-##### Include necessary files #####
+##### NECESSARY INCLUDE #####
+
 # Position of this include cannot be changed.
 # Ref: 
 # pintool/docs/98650/Pin/doc/html/index.html#ConfigDirectory
 include $(CONFIG_ROOT)/makefile.config
 
 
-################ DEFINE CUSTOM RULES BELOW ################
+##### CORE RULES BELOW #####
 
-## file management
+## Override targets introduced by makefile.config
+
+all:
+	$(error Available targets list: [$(TNAME_64), $(TNAME_32), reset, DIR64, DIR32])
+dir:
+	$(error Available targets list: [$(TNAME_64), $(TNAME_32), reset, DIR64, DIR32])
+
+## File management
 
 DIR64:
 	mkdir -p $(DIR_OUT_64)
@@ -57,7 +68,7 @@ DIR32:
 reset:
 	$(shell set -e; rm -rf $(DIR_OUT)/*;)
 
-## all intermediate targets
+## All intermediate targets
 
 $(OBJDIR)checker$(OBJ_SUFFIX): $(DIR_SRC)/checker.cpp
 	$(CXX) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
@@ -71,25 +82,14 @@ $(OBJDIR)payload$(OBJ_SUFFIX): $(DIR_SRC)/payload.cpp
 $(OBJDIR)TracerCore$(OBJ_SUFFIX): $(DIR_SRC)/TracerCore.cpp
 	$(CXX) $(TOOL_CXXFLAGS) $(COMP_OBJ)$@ $<
 
-## build the tool itself
+## Target of the tool itself
 
-$(OBJDIR)TracerCore$(PINTOOL_SUFFIX): $(OBJDIR)%$(OBJ_SUFFIX)
+$(OBJDIR)TracerCore$(PINTOOL_SUFFIX):  $(OBJDIR)checker$(OBJ_SUFFIX)  $(OBJDIR)cli$(OBJ_SUFFIX)  $(OBJDIR)payload$(OBJ_SUFFIX)  $(OBJDIR)TracerCore$(OBJ_SUFFIX)
 	$(LINKER) $(TOOL_LDFLAGS_NOOPT) $(LINK_EXE)$@ $(TOOL_LPATHS) $(TOOL_LIBS)
 
-## entrance
-### Ref: [6.11 Target-specific Variable Values](https://www.gnu.org/software/make/manual/make.html#Target_002dspecific)
+## Final targets
 
 $(TNAME_64): DIR64 | $(OBJDIR)TracerCore$(PINTOOL_SUFFIX)
 $(TNAME_32): DIR32 | $(OBJDIR)TracerCore$(PINTOOL_SUFFIX)
 
-.PHONY: DIR64  DIR32  reset  $(TNAME_64)  $(TNAME_32)
-
-
-################ DEFINE CUSTOM RULES ABOVE ################
-
-
-##### Include necessary files #####
-# Position of this include cannot be changed.
-# Ref: 
-# pintool/docs/98650/Pin/doc/html/index.html#ConfigDirectory
-include $(TOOLS_ROOT)/Config/makefile.default.rules
+.PHONY: $(TNAME_64), $(TNAME_32), reset, DIR64, DIR32

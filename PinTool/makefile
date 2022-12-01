@@ -5,10 +5,7 @@
 WHERE_IS_MKF := $(abspath $(lastword $(MAKEFILE_LIST)))
 WHERE_IS_DIR := $(dir $(WHERE_IS_MKF))
 
-PINKIT_PTR := $(WHERE_IS_DIR)../PinKit/KIT_DIR_TREE
-ifeq (,$(wildcard $(PINKIT_PTR)))
-$(error missing $(PINKIT_PTR))
-endif
+## Set output directory
 
 DIR_SRC := $(WHERE_IS_DIR)./src
 DIR_OUT := $(WHERE_IS_DIR)./build
@@ -19,45 +16,49 @@ TNAME_64 := TracerCore64
 TNAME_32 := TracerCore32
 
 ifneq (,$(and $(filter $(TNAME_64),$(MAKECMDGOALS)),$(filter $(TNAME_32),$(MAKECMDGOALS))))
-$(error Only one of $(TNAME_64) and $(TNAME_32) can be compiled at one call)
+  $(error Only one of $(TNAME_64) and $(TNAME_32) can be compiled at one call)
 endif
 
+## Use `override` to force them not to be overwritten
+## Ref:
+## [6.7 The override Directive](https://www.gnu.org/software/make/manual/make.html#Override-Directive)
+
 ifneq (,$(filter $(TNAME_64),$(MAKECMDGOALS)))
-override OBJDIR := $(DIR_OUT_64)/
-override TARGET := intel64
+  override OBJDIR := $(DIR_OUT_64)/
+  override TARGET := intel64
 endif
 ifneq (,$(filter $(TNAME_32),$(MAKECMDGOALS)))
-override OBJDIR := $(DIR_OUT_32)/
-override TARGET := ia32
+  override OBJDIR := $(DIR_OUT_32)/
+  override TARGET := ia32
+endif
+
+## Read `KIT_DIR_TREE` to locate Pin Kit
+
+PINKIT_PTR := $(WHERE_IS_DIR)../PinKit/KIT_DIR_TREE
+ifeq (,$(wildcard $(PINKIT_PTR)))
+  $(error missing $(PINKIT_PTR))
 endif
 
 PIN_ROOT := $(WHERE_IS_DIR)../PinKit/$(file < $(PINKIT_PTR))
 ifeq (,$(wildcard $(PIN_ROOT)))
-$(error missing $(PIN_ROOT))
+  $(error missing $(PIN_ROOT))
 endif
 
 CONFIG_ROOT := $(PIN_ROOT)/source/tools/Config
 ifeq (,$(wildcard $(CONFIG_ROOT)))
-$(error missing $(CONFIG_ROOT))
+  $(error missing $(CONFIG_ROOT))
 endif
 
 
 ##### NECESSARY INCLUDE #####
 
-# Position of this include cannot be changed.
-# Ref: 
-# pintool/docs/98650/Pin/doc/html/index.html#ConfigDirectory
+## Position of this include cannot be changed.
+## Ref: 
+## pintool/docs/98650/Pin/doc/html/index.html#ConfigDirectory
 include $(CONFIG_ROOT)/makefile.config
 
 
 ##### CORE RULES BELOW #####
-
-## Override targets introduced by makefile.config
-
-all:
-	$(error Available targets list: [$(TNAME_64), $(TNAME_32), reset, DIR64, DIR32])
-dir:
-	$(error Available targets list: [$(TNAME_64), $(TNAME_32), reset, DIR64, DIR32])
 
 ## File management
 
@@ -84,7 +85,10 @@ $(OBJDIR)TracerCore$(OBJ_SUFFIX): $(DIR_SRC)/TracerCore.cpp
 
 ## Target of the tool itself
 
-$(OBJDIR)TracerCore$(PINTOOL_SUFFIX):  $(OBJDIR)checker$(OBJ_SUFFIX)  $(OBJDIR)cli$(OBJ_SUFFIX)  $(OBJDIR)payload$(OBJ_SUFFIX)  $(OBJDIR)TracerCore$(OBJ_SUFFIX)
+$(OBJDIR)TracerCore$(PINTOOL_SUFFIX):   $(OBJDIR)checker$(OBJ_SUFFIX)    \
+                                        $(OBJDIR)cli$(OBJ_SUFFIX)        \
+                                        $(OBJDIR)payload$(OBJ_SUFFIX)    \
+                                        $(OBJDIR)TracerCore$(OBJ_SUFFIX)
 	$(LINKER) $(TOOL_LDFLAGS_NOOPT) $(LINK_EXE)$@ $(TOOL_LPATHS) $(TOOL_LIBS)
 
 ## Final targets
@@ -92,4 +96,15 @@ $(OBJDIR)TracerCore$(PINTOOL_SUFFIX):  $(OBJDIR)checker$(OBJ_SUFFIX)  $(OBJDIR)c
 $(TNAME_64): DIR64 | $(OBJDIR)TracerCore$(PINTOOL_SUFFIX)
 $(TNAME_32): DIR32 | $(OBJDIR)TracerCore$(PINTOOL_SUFFIX)
 
-.PHONY: $(TNAME_64), $(TNAME_32), reset, DIR64, DIR32
+## Summary
+
+AVAILABLE_TARGETS := $(TNAME_64) $(TNAME_32) reset DIR64 DIR32
+
+.PHONY: $(AVAILABLE_TARGETS)
+
+## Override targets introduced by makefile.config
+
+all:
+	$(error Available targets: [ $(AVAILABLE_TARGETS) ])
+dir:
+	$(error Available targets: [ $(AVAILABLE_TARGETS) ])

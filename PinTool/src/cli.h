@@ -15,7 +15,7 @@ INT32 init_TrSym();
 INT32 init_TrCut();
 INT32 init_TrSca();
 
-FINI_CALLBACK fini_files(INT32 C, VOID *V);
+VOID fini_files(INT32 C, VOID *V);
 
 extern std::ofstream            TrDat;
 extern std::ofstream            TrSym;

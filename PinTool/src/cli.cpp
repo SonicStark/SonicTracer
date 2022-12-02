@@ -12,7 +12,7 @@
  */
 KNOB<std::string> KNOB_TrDatPath(
     KNOB_MODE_WRITEONCE,
-    "TracerCoreCli",
+    "pintool",
     "TrDatPath",
     "", //set default value
     "Specify the path of output trace file."
@@ -26,7 +26,7 @@ KNOB<std::string> KNOB_TrDatPath(
  */
 KNOB<std::string> KNOB_TrSymPath(
     KNOB_MODE_WRITEONCE,
-    "TracerCoreCli",
+    "pintool",
     "TrSymPath",
     "", //set default value
     "Specify the path of output trace symbol file."
@@ -38,7 +38,7 @@ KNOB<std::string> KNOB_TrSymPath(
  */
 KNOB<std::string> KNOB_TrCutName(
     KNOB_MODE_WRITEONCE,
-    "TracerCoreCli",
+    "pintool",
     "TrCutName",
     "", //set default value
     "Specify a series of function names whose "
@@ -56,7 +56,7 @@ KNOB<std::string> KNOB_TrCutName(
  */
 KNOB<std::string> KNOB_TrScaType(
     KNOB_MODE_WRITEONCE,
-    "TracerCoreCli",
+    "pintool",
     "TrScaType",
     "bbl", //set default value
     "Specify the granularity of trace. "
@@ -94,9 +94,9 @@ INT32 TrSca = TL_BBL;
  */
 INT32 init_TrSca(){
     const std::string sca = KNOB_TrScaType.Value();
-    if      (sca.compare("ins")) { TrSca = TL_INS; }
-    else if (sca.compare("bbl")) { TrSca = TL_BBL; }
-    else if (sca.compare("cal")) { TrSca = TL_CAL; }
+    if      (0==sca.compare("ins")) { TrSca = TL_INS; }
+    else if (0==sca.compare("bbl")) { TrSca = TL_BBL; }
+    else if (0==sca.compare("cal")) { TrSca = TL_CAL; }
     else { return EVIL_ARG; }
     return GOOD_ARG;
 }
@@ -129,7 +129,7 @@ std::ofstream TrDat;
  * @return `GOOD_ARG` for success or `EVIL_ARG` for failed `open`
  */
 INT32 init_TrDat(){
-    TrDat.open(KNOB_TrDatPath.Value(), std::ios::out|std::ios::trunc);
+    TrDat.open(KNOB_TrDatPath.Value().c_str(), std::ios::out|std::ios::trunc);
     if (TrDat.is_open()) { return GOOD_ARG; }
     else { return EVIL_ARG; }
 }
@@ -146,7 +146,7 @@ INT32 init_TrSym(){
     const std::string tsp = KNOB_TrSymPath.Value();
     if (0 == tsp.size()) { return GOOD_ARG; }
     else {
-        TrSym.open(tsp, std::ios::out|std::ios::trunc);
+        TrSym.open(tsp.c_str(), std::ios::out|std::ios::trunc);
         if (TrSym.is_open()) { return GOOD_ARG; }
         else { return EVIL_ARG; }
     }
@@ -157,9 +157,10 @@ INT32 init_TrSym(){
  * @param C from default signature & unused
  * @param V from default signature & unused
  */
-FINI_CALLBACK fini_files(INT32 C, VOID *V){
+VOID fini_files(INT32 C, VOID *V){
     if (TrDat.is_open()) { TrDat.close(); }
     if (TrSym.is_open()) { TrSym.close(); }
+    std::cout << "[-] Hope to see you again :-) " << std::endl;
 }
 
 /**

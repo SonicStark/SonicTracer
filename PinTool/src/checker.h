@@ -5,13 +5,13 @@
 #include <string>
 #include <vector>
 
-inline bool IsBlockedName(const std::string &SN);
+bool IsBlockedName(const std::string &SN);
 bool IsBlocked(const std::string &name);
 bool IsBlocked(ADDRINT            addr);
 bool IsBlocked(RTN               &rtni);
 
-inline bool IsInsideMain(ADDRINT addr);
-inline bool IsInsideMain(RTN    &rtni);
+bool IsInsideMain(ADDRINT addr);
+bool IsInsideMain(RTN    &rtni);
 
 // There are only limited types of parameters can be accepted by
 // an analyse routine. We should allocate some memory to place the
@@ -27,13 +27,13 @@ inline bool IsInsideMain(RTN    &rtni);
 // * https://software.intel.com/sites/landingpage/pintool/docs/98650/Pin/doc/html/index.html#MT
 class SymPtrVector
 {
-    protected:
-        std::vector<std::string *>           PtrVec;
-        std::vector<std::string *>::iterator PtrVecIt;
-    public:
-        std::string* GetSymPtr(const std::string &SymStr);
-        SymPtrVector();
-        ~SymPtrVector();
-}
+protected:
+    std::string* pSymCache;
+    std::vector<std::string *> PtrVec;
+public:
+    std::string* GetSymPtr(const std::string &SymStr);
+    SymPtrVector();
+    ~SymPtrVector();
+};
 
 #endif

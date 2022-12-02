@@ -1,6 +1,5 @@
 #include "checker.h"
 #include "cli.h"
-#include <algorithm>
 
 /**
  * Whether the name needs to be screened.
@@ -8,7 +7,7 @@
  * @param SN name string
  * @return true or false
  */
-inline bool IsBlockedName(const std::string &SN)
+bool IsBlockedName(const std::string &SN)
 {
     if (SN.size() == 0) { return false; }
     else {
@@ -17,6 +16,7 @@ inline bool IsBlockedName(const std::string &SN)
             if (to_match.find(cName) != std::string::npos)
                 { return true; }
         }
+        return false;
     }
 }
 
@@ -63,10 +63,11 @@ bool IsBlocked(RTN &rtni)
  * @param addr memory address
  * @return true or false
  */
-inline bool IsInsideMain(ADDRINT addr){
-    return IMG_IsMainExecutable(
-        IMG_FindByAddress(addr)
-    );
+bool IsInsideMain(ADDRINT addr){
+    IMG imgi = IMG_FindByAddress(addr);
+
+    if (!IMG_Valid(imgi)) { return false; }
+    else { return IMG_IsMainExecutable(imgi); }
 }
 
 /**
@@ -74,10 +75,12 @@ inline bool IsInsideMain(ADDRINT addr){
  * @param rtni Routine Object
  * @return true or false
  */
-inline bool IsInsideMain(RTN &rtni){
-    return IMG_IsMainExecutable(
-        SEC_Img(RTN_Sec(rtni))
-    );
+bool IsInsideMain(RTN &rtni){
+    if (!RTN_Valid(rtni)) { return false; }
+    IMG imgi = SEC_Img(RTN_Sec(rtni));
+
+    if (!IMG_Valid(imgi)) { return false; }
+    else { return IMG_IsMainExecutable(imgi); }
 }
 
 /**
@@ -87,40 +90,42 @@ inline bool IsInsideMain(RTN &rtni){
  */
 std::string* SymPtrVector::GetSymPtr(const std::string &SymStr){
     //try the last available one
-    if (PtrVecIt != PtrVec.end() && (*PtrVecIt)->compare(Symstr))
-        { return (*PtrVecIt); }
+    if (pSymCache && 0==pSymCache->compare(SymStr))
+        { return pSymCache; }
+
     //try to find a available pointer
-    PtrVecIt = std::find_if(PtrVec.begin(), PtrVec.end(),
-        [](auto i__){
-            if ((*i__)->compare(SymStr)) { return true; }
-            else { return false; }
+    std::vector<std::string *>::iterator it_;
+    for (it_ = PtrVec.begin(); it_ != PtrVec.end(); ++it_) {
+        if (0 == (*it_)->compare(SymStr)) {
+            pSymCache = (*it_);
+            return pSymCache;
         }
-    );
-    //return an existed one or a new one
-    if (PtrVecIt != PtrVec.end()) { return (*PtrVecIt); }
-    else {
-        std::string *pSymStr = new std::string(SymStr);
-        PtrVec.push_back(pSymStr);
-        return pSymStr;
     }
+
+    //for-loop ends without return, so create a new one
+    pSymCache = new std::string(SymStr);
+    PtrVec.push_back(pSymCache);
+    return pSymCache;
 }
 
 /**
  * Constructor
  */
 SymPtrVector::SymPtrVector(){
-    PtrVecIt = PtrVec.end();
+    pSymCache = 0;
 }
 
 /**
  * Destructor to prevent memory leak
  */
 SymPtrVector::~SymPtrVector(){
+    std::vector<std::string *>::iterator it_;
+    //reset pSymCache
+    pSymCache = 0;
     //free the memory
-    std::for_each(PtrVec.begin(), PtrVec.end(),
-        [](auto j__){ delete (*j__); });
+    for (it_ = PtrVec.begin(); it_ != PtrVec.end(); ++it_)
+        { delete (*it_); }
     //erase the vector
-    PtrVecIt = PtrVec.begin();
-    for (; PtrVecIt != PtrVecIt.end();){
-        { PtrVecIt = PtrVec.erase(PtrVecIt); }
+    for (it_ = PtrVec.begin(); it_ != PtrVec.end();)
+        { it_ = PtrVec.erase(it_); }
 }

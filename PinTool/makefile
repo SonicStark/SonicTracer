@@ -7,8 +7,8 @@ WHERE_IS_DIR := $(dir $(WHERE_IS_MKF))
 
 ## Set output directory
 
-DIR_SRC := $(WHERE_IS_DIR)./src
-DIR_OUT := $(WHERE_IS_DIR)./build
+DIR_SRC := $(WHERE_IS_DIR)src
+DIR_OUT := $(WHERE_IS_DIR)build
 DIR_OUT_64 := $(DIR_OUT)/intel64
 DIR_OUT_32 := $(DIR_OUT)/ia32
 
@@ -34,12 +34,12 @@ endif
 
 ## Read `KIT_DIR_TREE` to locate Pin Kit
 
-PINKIT_PTR := $(WHERE_IS_DIR)../PinKit/KIT_DIR_TREE
+PINKIT_PTR := $(abspath $(WHERE_IS_DIR)../PinKit/KIT_DIR_TREE)
 ifeq (,$(wildcard $(PINKIT_PTR)))
   $(error missing $(PINKIT_PTR))
 endif
 
-PIN_ROOT := $(WHERE_IS_DIR)../PinKit/$(file < $(PINKIT_PTR))
+PIN_ROOT := $(abspath $(WHERE_IS_DIR)../PinKit/$(file < $(PINKIT_PTR)))
 ifeq (,$(wildcard $(PIN_ROOT)))
   $(error missing $(PIN_ROOT))
 endif
@@ -68,6 +68,9 @@ DIR32:
 	mkdir -p $(DIR_OUT_32)
 reset:
 	$(shell set -e; rm -rf $(DIR_OUT)/*;)
+	@echo "============== RESET =============="
+	@echo " Things in build have been flushed "
+	@echo "==================================="
 
 ## All intermediate targets
 
@@ -85,11 +88,23 @@ $(OBJDIR)TracerCore$(OBJ_SUFFIX): $(DIR_SRC)/TracerCore.cpp
 
 ## Target of the tool itself
 
-$(OBJDIR)TracerCore$(PINTOOL_SUFFIX):   $(OBJDIR)checker$(OBJ_SUFFIX)    \
-                                        $(OBJDIR)cli$(OBJ_SUFFIX)        \
-                                        $(OBJDIR)payload$(OBJ_SUFFIX)    \
+$(OBJDIR)TracerCore$(PINTOOL_SUFFIX):   $(OBJDIR)cli$(OBJ_SUFFIX)       \
+                                        $(OBJDIR)checker$(OBJ_SUFFIX)   \
+                                        $(OBJDIR)payload$(OBJ_SUFFIX)   \
                                         $(OBJDIR)TracerCore$(OBJ_SUFFIX)
-	$(LINKER) $(TOOL_LDFLAGS_NOOPT) $(LINK_EXE)$@ $(TOOL_LPATHS) $(TOOL_LIBS)
+	$(LINKER) $(TOOL_LDFLAGS) $(LINK_EXE)$@ $+ $(TOOL_LPATHS) $(TOOL_LIBS)
+	@echo "=========================== WELCOME ==========================="
+	@echo "Thank you for using Igor's powerful"
+	@echo "'########:'########:::::'###:::::'######::'########:'########::"
+	@echo "... ##..:: ##.... ##:::'## ##:::'##... ##: ##.....:: ##.... ##:"
+	@echo "::: ##:::: ##:::: ##::'##:. ##:: ##:::..:: ##::::::: ##:::: ##:"
+	@echo "::: ##:::: ########::'##:::. ##: ##::::::: ######::: ########::"
+	@echo "::: ##:::: ##.. ##::: #########: ##::::::: ##...:::: ##.. ##:::"
+	@echo "::: ##:::: ##::. ##:: ##.... ##: ##::: ##: ##::::::: ##::. ##::"
+	@echo "::: ##:::: ##:::. ##: ##:::: ##:. ######:: ########: ##:::. ##:"
+	@echo ":::..:::::..:::::..::..:::::..:::......:::........::..:::::..::"
+	@echo "PinTool is located at $(OBJDIR)TracerCore$(PINTOOL_SUFFIX)"
+	@echo "==============================================================="
 
 ## Final targets
 

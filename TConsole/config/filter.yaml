@@ -1,0 +1,10 @@
+KEYWORD_BLOCKED:
+    - '__asan'
+    - '__sanitizer'
+    - '__interceptor'
+    - '__interception'
+    - '__lsan'
+    - '__ubsan'
+    - '__tsan'
+    - '__msan'
+    - '__hwasan'

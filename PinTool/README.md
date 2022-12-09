@@ -46,6 +46,10 @@ and immediately we will get the following output
 ::: ##:::: ##::. ##:: ##.... ##: ##::: ##: ##::::::: ##::. ##::
 ::: ##:::: ##:::. ##: ##:::: ##:. ######:: ########: ##:::. ##:
 :::..:::::..:::::..::..:::::..:::......:::........::..:::::..::
+
+Pin: pin-3.25-98650-8f6168173
+Copyright 2002-2022 Intel Corporation.
+
 [+] TracerCore - a Pintool which produces the trace you need.
 
 Pin tools switches

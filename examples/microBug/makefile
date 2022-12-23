@@ -2,7 +2,7 @@ LOC_MKF := ${abspath ${lastword ${MAKEFILE_LIST}}}
 LOC_DIR := ${dir ${LOC_MKF}}
 LOC_OUT := ${LOC_DIR}build/
 
-FLAG_COMMON := -O0
+FLAG_COMMON := -v -O0
 FLAG_DBG    := -gdwarf-4
 FLAG_X86    := -m32
 

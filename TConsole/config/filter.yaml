@@ -1,10 +1,194 @@
+HEAD_TRUNC_NAME: '_init'
+TAIL_TRUNC_NAME: '_fini'
+
+#It is better to sort by frequency to optimize the search
 KEYWORD_BLOCKED:
-    - '__asan'
     - '__sanitizer'
+    - '__asan'
     - '__interceptor'
     - '__interception'
     - '__lsan'
+    - '__sancov'
     - '__ubsan'
-    - '__tsan'
-    - '__msan'
+    - '__local_asan_preinit'
+    - '__local_lsan_preinit'
+    - 'AsanGetStack'
+    - 'asan_thread_start'
+    - 'LsanOnDeadlySignal'
+    - 'MemcmpInterceptorCommon'
+    - 'elf_add'
+    - 'elf_find_debugfile_by_debuglink'
+    - 'elf_nodebug'
+    - 'elf_nosyms'
+    - 'elf_symbol_compare'
+    - 'elf_syminfo'
+    - 'elf_try_debugfile'
+    - 'elf_uncompress_zdebug'
+    - 'read_address'
+    - 'read_attribute'
+    - 'read_byte'
+    - 'read_function_entry'
+    - 'read_referenced_name'
+    - 'read_string'
+    - 'read_sleb'
+    - 'read_uint'
+    - 'read_uleb'
+    - 'd_abi_tags'
+    - 'd_append_buffer'
+    - 'd_append_num'
+    - 'd_bare_function_type'
+    - 'd_call_offset'
+    - 'd_compact_number'
+    - 'd_count_templates_scopes'
+    - 'd_cv_qualifiers'
+    - 'd_demangle'
+    - 'd_discriminator'
+    - 'd_encoding'
+    - 'd_expression'
+    - 'd_exprlist'
+    - 'd_expr_primary'
+    - 'd_find_pack'
+    - 'd_function_type'
+    - 'd_growable_string_ca'
+    - 'd_index_template_'
+    - 'd_lookup_template_'
+    - 'd_make_comp'
+    - 'd_make_name'
+    - 'd_maybe_print_fold'
+    - 'd_name'
+    - 'd_number'
+    - 'd_operator_name'
+    - 'd_parmlist'
+    - 'd_print_'
+    - 'd_ref_qualifier'
+    - 'd_source_name'
+    - 'd_substitution'
+    - 'd_template_'
+    - 'd_unqualified_name'
+    - 'internal_sigreturn'
+    - 'DemangleCallback'
+    - 'ErrorCallback'
+    - 'SymbolizeCodeCallback'
+    - 'SymbolizeCodePCInfoCallback'
+    - 'SymbolizeDataCallback'
+    - 'is_ctor_or_dtor'
+    - 'next_is_type_qual'
+    - 'abbrev_compare'
+    - 'add_function_range'
+    - 'add_line'
+    - 'add_unit_addr'
+    - 'dwarf_buf_error'
+    - 'dwarf_fileline'
+    - 'dwarf_lookup_pc'
+    - 'find_address_ranges'
+    - 'free_abbrevs'
+    - 'free_line_header'
+    - 'function_addrs_compare'
+    - 'line_compare'
+    - 'lookup_abbrev'
+    - 'report_inlined_functions'
+    - 'unit_addrs_compare'
+    - 'phdr_callback'
+    - 'fileline_initialize'
+    - 'backtrace_free_locked'
+    - 'real_clock_gettime'
+    - 'real_pthread_attr_getstack'
+    - 'PoisonAlignedStackMemory'
+    - 'AllocateFromLocalPool'
+    - 'ClearShadowMemoryForContextStack'
+    - 'maybe_parse_length_modifier'
+    - 'maybe_parse_param_index'
+    - 'format_get_value_size'
+    - 'format_get_char_size'
+    - 'wrapped_qsort_compar'
+    - 'wrapped_qsort_r_compar'
+    - 'wrapped_gl_opendir'
+    - 'wrapped_gl_readdir'
+    - 'wrapped_gl_closedir'
+    - 'wrapped_gl_stat'
+    - 'wrapped_gl_lstat'
+    - 'wrapped_read'
+    - 'wrapped_write'
+    - 'wrapped_seek'
+    - 'wrapped_close'
+    - 'scanf_common'
+    - 'printf_common'
+    - 'ioctl_common_post'
+    - 'ioctl_common_pre'
+    - 'MlockIsUnsupported'
+    - 'StrtolFixAndCheck'
+    - 'AtCxaAtexit'
+    - 'StrstrCheck'
+    - 'findBaseAtOffset'
+    - 'isDerivedFromAtOffset'
     - '__hwasan'
+    - 'HwasanThreadStartFunc'
+    - 'hwasan_allocator'
+    - 'hwasan_report'
+    - '__msan'
+    - 'MsanCheckFailed'
+    - 'MsanOnDeadlySignal'
+    - 'interceptor_ctx'
+    - 'MSanAtExitWrapper'
+    - 'IsInInterceptorScope'
+    - 'MSanCxaAtExitWrapper'
+    - '__dfsan'
+    - 'dfsan_'
+    - '__dfsw'
+    - 'gwp_asan'
+
+# SOURCE INFO
+# -----------
+# 
+# (/etc/issue) Ubuntu 20.04.5 LTS
+# (uname -a) Linux aa6bc4b1df47 4.15.0-200-generic #211-Ubuntu SMP Thu Nov 24 18:16:04 UTC 2022 x86_64 x86_64 x86_64 GNU/Linux
+# 
+# /usr/lib/gcc/x86_64-linux-gnu/9/
+#   |_ libasan.a
+#   |_ libasan.so
+#   |_ libasan_preinit.o
+#   |_ liblsan.a
+#   |_ liblsan.so
+#   |_ liblsan_preinit.o
+#   |_ libubsan.a
+#   |_ libubsan.so
+# 
+# /usr/lib/llvm-10/lib/clang/10.0.0/lib/linux/
+#   |_ libclang_rt.asan-preinit-i386.a
+#   |_ libclang_rt.asan-preinit-x86_64.a
+#   |_ libclang_rt.asan-i386.a
+#   |_ libclang_rt.asan-i386.so
+#   |_ libclang_rt.asan-x86_64.a
+#   |_ libclang_rt.asan-x86_64.so
+#   |_ libclang_rt.asan_cxx-i386.a
+#   |_ libclang_rt.asan_cxx-x86_64.a
+#   |_ libclang_rt.dfsan-x86_64.a
+#   |_ libclang_rt.gwp_asan-i386.a
+#   |_ libclang_rt.gwp_asan-x86_64.a
+#   |_ libclang_rt.hwasan-x86_64.a
+#   |_ libclang_rt.hwasan-x86_64.so
+#   |_ libclang_rt.hwasan_cxx-x86_64.a
+#   |_ libclang_rt.lsan-i386.a
+#   |_ libclang_rt.lsan-x86_64.a
+#   |_ libclang_rt.msan-x86_64.a
+#   |_ libclang_rt.msan_cxx-x86_64.a
+#   |_ libclang_rt.ubsan_minimal-i386.a
+#   |_ libclang_rt.ubsan_minimal-i386.so
+#   |_ libclang_rt.ubsan_minimal-x86_64.a
+#   |_ libclang_rt.ubsan_minimal-x86_64.so
+#   |_ libclang_rt.ubsan_standalone-i386.a
+#   |_ libclang_rt.ubsan_standalone-i386.so
+#   |_ libclang_rt.ubsan_standalone-x86_64.a
+#   |_ libclang_rt.ubsan_standalone-x86_64.so
+#   |_ libclang_rt.ubsan_standalone_cxx-i386.a
+#   |_ libclang_rt.ubsan_standalone_cxx-x86_64.a
+# 
+# A simple example for verifying the rules
+# ```shell
+# nm  /usr/lib/gcc/x86_64-linux-gnu/9/libasan.a 2>/dev/null | sed -n "/\s[tT]\s/p" \
+#   | sed "/__sanitizer/d" \
+#   | sed "/__asan/d" \
+#   | sed "/__interceptor/d" \
+#   | sed "/__interception/d" \
+#   | less
+# ```

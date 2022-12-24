@@ -1,7 +1,9 @@
-DIR_PIN_KIT:  '~/project/IgorWork/SonicTracer/PinKit'
-DIR_PIN_TOOL: '~/project/IgorWork/SonicTracer/PinTool'
+### MUST USE ABS PATH ###
 
-DIR_SAVELOGS: '~/project/IgorWork/SonicTracer/logs' #Empty string means not save logs to file and those from Pin will be saved into DIR_FALLBACK.
+DIR_PIN_KIT:  '/tmp/SonicTracer/PinKit'
+DIR_PIN_TOOL: '/tmp/SonicTracer/PinTool'
+
+DIR_SAVELOGS: '/tmp/SonicTracer/logs' #Empty string means not save logs to file and those from Pin will be saved into DIR_FALLBACK.
 DIR_FALLBACK: '/tmp'
 
 BIN_nm: '/usr/bin/nm'

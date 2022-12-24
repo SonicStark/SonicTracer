@@ -5,6 +5,8 @@ import logging
 
 from ..config import CONFIG_PATH
 
+DEFAULT_LOG_LEVEL = logging.INFO
+
 def GIVE_MY_LOGGER(name :str ="TConsole_root") -> logging.Logger:
     """
     https://docs.python.org/3.8/library/logging.html#logging.getLogger
@@ -29,7 +31,7 @@ def GIVE_MY_LOGGER(name :str ="TConsole_root") -> logging.Logger:
             FIL.setFormatter(FMT)
             LGR.addHandler(FIL)
 
-        LGR.setLevel(logging.DEBUG)
+        LGR.setLevel(DEFAULT_LOG_LEVEL)
     return LGR
 
 if __name__ == "__main__":

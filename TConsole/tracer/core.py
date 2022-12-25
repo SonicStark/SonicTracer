@@ -2,9 +2,23 @@ import typing
 import time
 
 from .worker import ParallelWorker
+from ..utility.log import GIVE_MY_LOGGER
+from ..utility.text import dict2str
 
 class TracerCoreRunner:
-    """
+    """ A wrapper for running TracerCore
+
+    Current implementation allows multiple tasks to be executed in parallel.
+    The command line parameters passed to the subprocess will be managed by dict
+    and indexed with an integer between 10000 and 99999. (`FixArgs` and `VarArgs`)
+    
+    As shown in the following table, the first 3 digits indicate the category of parameters. 
+    The 4th digit indicates whether the parameters of this category are fixed (when equal to 0) 
+    or variable (when equal to 1) for different tasks. 
+    The 5th digit is used to number each parameter under the same category (which means that 
+    the number of parameter strings in 1 category cannot exceed 10). For positional args, it is
+    usually equal to 0. For keyword args, usually 0 is used to number the keyword itself, 
+    while 1~9 are used to number the corresponding values.
 
     |  Index |  Argument  |
     |--------|------------|
@@ -35,8 +49,45 @@ class TracerCoreRunner:
 
         num_workers :int =2
     ) -> None:
+        """ Constructor which receives fix args
+
+        Please be careful, in this class we do NOT check the 
+        validity of those parameters, but only saved, combined
+        and passed them. Abnormal parameters may lead to 
+        unexpected consequences.
+
+        Parameters
+        ----------
+        num_workers:
+            Number of workers in the pool. Default is 2.
+        bin_pin:
+            Argument category 10000
+        bin_tool:
+            Argument category 20001
+        bin_target:
+            Argument category 40000
+        tool_ScaType:
+            Argument category 21001. 0 means 'cal'. 1 means 'bbl'.
+            2 means 'ins'. Otherwise 'bbl' as fallback.
+        tool_CutName:
+            Argument category 21101. Pass `[]` or `[""]`
+            means shutting off the corresponding feature.
+        target_args_fix0:
+            Argument category 50000. In order to simplify the operation,
+            parameters of target program are divided into three parts:
+            fixed(before), variable and fixed(after). For each part, 
+            parameters need to be merged into one string. For example,
+            We need to run this against a `var_file`: 
+            `/bin/a.out --debug -l /tmp/var_file -h -o /dev/null`.
+            So `bin_target` is `/bin/a.out`, `target_args_fix0` is `--debug -l`,
+            and `target_args_fix0` is `-h -o /dev/null`.
+            Pass `""` to it when nothing is needed.
+        target_args_fix1:
+            Argument category 70000. Just like `target_args_fix0`
+            except it will be placed after var args of target.
         """
-        """
+        self.rlog = GIVE_MY_LOGGER()
+
         self.FixArgs = {
             10000 : bin_pin,
             10110 : "-logfile",
@@ -55,8 +106,10 @@ class TracerCoreRunner:
             self.FixArgs[21001] = "cal"
         elif (1 == tool_ScaType):
             self.FixArgs[21001] = "bbl"
-        else:
+        elif (2 == tool_ScaType):
             self.FixArgs[21001] = "ins"
+        else:
+            self.FixArgs[21001] = "bbl"
 
         tcutn = ";".join(tool_CutName)
         if (2 <= len(tcutn)):
@@ -65,37 +118,68 @@ class TracerCoreRunner:
 
         self.wPool = ParallelWorker(self.FixArgs, num_workers)
         self.rList = []
+        self.wDone = False
 
-    def apply_jobs(self, VarArgs :typing.Generator[None,None,tuple],
+    def apply(self, GenVarArgs :typing.Generator[None,None,tuple],
         stdin  :bool =False,
         output :bool =False,
         timeout :typing.Optional[int] =None
     ) -> None:
+        """ Apply jobs to workers in the pool
+
+        Parameters
+        ----------
+        GenVarArgs:
+            A generator which produces the variable args info.
+            It yield a tuple in once. The first item in the tuple
+            should be a dict which contains variable args like
+            those in `self.FixArgs`. Variable args may various
+            between different jobs.
+        stdin:
+            If `False`, the tuple yielded by `GenVarArgs` should only
+            contains one item. If `True`, the tuple should contains two.
+            And the second item should be a file object like 
+            `open("sth", mode="rb")`. The file content will be applied
+            into stdin of target.
+        output:
+            If `False`, the job function returns (`Popen.returncode`,).
+            Otherwise it returns (`Popen.returncode`, `Popen.stdout`, `Popen.stderr`).
+        timeout:
+            If the process which executes the job funtion does not terminate
+            after timeout seconds, it will be killed. `None` shuts off this feature.
         """
-        """
-        for va in VarArgs:
+        for va in GenVarArgs:
+            VarArgs = va[0]
             if (stdin is False):
                 stdin_ = None
             else:
                 stdin_ = va[1]
-            job_func = self.wPool.generate_job(va[0], 
+            job_func = self.wPool.generate_job(VarArgs, 
                 have_stdin  = stdin_,
                 keep_output = output,
                 timeout_sec = timeout
             )
             self.rList.append(
                 self.wPool.apply_async(job_func))
+            self.rlog.debug("Apply => %s", dict2str(self.wPool.args_common))
     
-    def wait(self, refresh_sec :int =1) -> None:
-        """
+    def wait(self, refresh_sec :int =5) -> None:
+        """ Wait for all jobs to complete
+
+        `refresh_sec` is the time interval (in seconds)
+        for polling the progress. Default is 5.
         """
         self.wPool.close()
+        self.wDone = False
 
         job_num = len(self.rList)
         job_done = []
         job_wait = list(range(job_num))
 
         while (len(job_wait) > 0):
+            self.rlog.info("Running: %d, Progress: %d/%d", 
+                len(job_wait), len(job_done), job_num)
+
             job_wait_new = []
             for i in job_wait:
                 if (self.rList[i].ready() is True):
@@ -104,3 +188,20 @@ class TracerCoreRunner:
                     job_wait_new.append(i)
             job_wait = job_wait_new
             time.sleep(refresh_sec)
+
+        self.wPool.join()
+        self.wDone = True
+        self.rlog.info("%d jobs have been done", job_num)
+
+    def access(self) -> typing.Optional[typing.Generator[None,None,tuple]]:
+        """ Access returned things from job functions
+
+        One must call `self.wait` before using `self.access`.
+        Otherwise it will return `None`. 
+        """
+        if (self.wDone is False):
+            return None
+        else:
+            for i in range(len(self.rList)):
+                self.rlog.debug("Access job %d", i)
+                yield self.rList[i].get()

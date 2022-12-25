@@ -39,7 +39,7 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
         have_stdin  :typing.Optional[typing.BinaryIO] =None,
         keep_output :bool =False,
         timeout_sec :typing.Optional[int] =None
-    ) -> typing.Callable:
+    ) -> typing.Callable[[],tuple]:
         """ Return a function without args as job for a worker
 
         Parameters
@@ -53,7 +53,7 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
         keep_output:
             If `False`, the returned function returns `Popen.returncode`.
             Otherwise it returns `Popen.returncode`, `Popen.stdout` and `Popen.stderr`,
-            and the last two are byte streams.
+            and the last two are byte streams. The returned is always a tuple.
         timeout_sec:
             If the process does not terminate after timeout seconds, `Popen.kill()`
             will be called.
@@ -74,7 +74,7 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
                     except subprocess.TimeoutExpired:
                         p_.kill()
                     finally:
-                        return p_.returncode
+                        return (p_.returncode,)
                 ###############################################
             else:
                 ######## keep_output: 0  have_stdin: 1 ########
@@ -86,7 +86,7 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
                     except subprocess.TimeoutExpired:
                         p_.kill()
                     finally:
-                        return p_.returncode
+                        return (p_.returncode,)
                 ###############################################
         else:
             if (have_stdin is None):
@@ -101,7 +101,7 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
                     except subprocess.TimeoutExpired:
                         p_.kill()
                     finally:
-                        return p_.returncode, bout, berr
+                        return (p_.returncode, bout, berr)
                 ###############################################
             else:
                 ######## keep_output: 1  have_stdin: 1 ########
@@ -116,7 +116,7 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
                     except subprocess.TimeoutExpired:
                         p_.kill()
                     finally:
-                        return p_.returncode, bout, berr
+                        return (p_.returncode, bout, berr)
                 ###############################################
         
         return job_function

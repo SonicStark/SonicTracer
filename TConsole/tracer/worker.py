@@ -45,8 +45,9 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
         Parameters
         ----------
         args_append:
-            Will be merged into `args_common` as a supplement.
-            The merged one will be used for building the final list.
+            Will be merged with a copy of `args_common` as a supplement.
+            The merged one will be used for building the final list, and 
+            the existing args in `args_common` will be overwritten in it.
         have_stdin:
             `None` means nothing will be write to stdin. Otherwise
             it is usually a file object like `open("sth", mode="rb")`.
@@ -58,11 +59,13 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
             If the process does not terminate after timeout seconds, `Popen.kill()`
             will be called.
         """
-        self.args_common.update(args_append)
-        arg_idx = sorted(self.args_common.keys())
+        args_final = {}
+        args_final.update(self.args_common)
+        args_final.update(args_append)
+        arg_idx = sorted(args_final.keys())
         arg_lst = []
         for i in arg_idx:
-            arg_lst.append(self.args_common[i])
+            arg_lst.append(args_final[i])
 
         if (keep_output is False):
             if (have_stdin is None):

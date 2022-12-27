@@ -32,7 +32,13 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
         `n_workers` is the number of worker processes to use.
         """
         self.args_common = args_common
+        self._n_workers = n_workers
         super().__init__(n_workers)
+
+    def get_size(self) -> int:
+        """ Get num of workers in the pool
+        """
+        return self._n_workers
 
     def generate_job(self, 
         args_append :typing.Dict[int,str], 

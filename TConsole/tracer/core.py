@@ -45,8 +45,8 @@ class TracerCoreRunner:
         tool_ScaType :int,
         tool_CutName :typing.List[str],
         
-        target_args_fix0 :str,
-        target_args_fix1 :str,
+        target_args_fix0 :typing.Optional[str],
+        target_args_fix1 :typing.Optional[str],
 
         num_workers :int =2
     ) -> None:
@@ -82,7 +82,7 @@ class TracerCoreRunner:
             `/bin/a.out --debug -l /tmp/var_file -h -o /dev/null`.
             So `bin_target` is `/bin/a.out`, `target_args_fix0` is `--debug -l`,
             and `target_args_fix0` is `-h -o /dev/null`.
-            Pass `""` to it when nothing is needed.
+            Pass `None` to it when nothing is needed.
         target_args_fix1:
             Argument category 70000. Just like `target_args_fix0`
             except it will be placed after var args of target.
@@ -98,10 +98,13 @@ class TracerCoreRunner:
             21000 : "-TrScaType",
             21210 : "-TrDatPath",
             30000 : "--",
-            40000 : bin_target,
-            50000 : target_args_fix0,
-            70000 : target_args_fix1
+            40000 : bin_target
         }
+
+        if (target_args_fix0 is not None):
+            self.FixArgs[50000] = target_args_fix0
+        if (target_args_fix1 is not None):
+            self.FixArgs[70000] = target_args_fix1
 
         if   (0 == tool_ScaType):
             self.FixArgs[21001] = "cal"

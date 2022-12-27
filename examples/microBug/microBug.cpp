@@ -1,5 +1,6 @@
 #include "calls.h"
 #include <iostream>
+#include <string>
 #include <stdlib.h>
 
 void hit_HeapBufferOverflow(char* pBuf, int wlen)
@@ -101,6 +102,16 @@ int hit_wiki(int id)
     return iret;
 }
 
+void try_override_wlen(int* pwlen) {
+    using namespace std;
+    cout << " => try to override wLength=" << *pwlen << " ";
+    if (*pwlen == 0) {
+        string wlen_;  cin >> wlen_;
+        *pwlen = atoi(wlen_.c_str());
+        cout << " => now wLength=" << *pwlen;
+    } else { return; }
+}
+
 int main(int argc, char* argv[])
 {
     std::cout << " => main"; std::cout.flush();
@@ -108,11 +119,12 @@ int main(int argc, char* argv[])
     int wLength;
     if (argc != 2) { puts(" => argc exit"); return 0; }
     else { wLength = atoi(argv[1]); }
+    try_override_wlen(&wLength);
 
     char* pBadBuffer = new char[128];
 
     if      (wLength >= 66  && wLength <= 88 ) { hit_HeapUseAfterFree   (pBadBuffer, wLength); }
-    else if (wLength >= 99  && wLength <= 666) { hit_HeapBufferOverflow (pBadBuffer, wLength); }
+    else if (wLength >= 99  && wLength <= 666) { hit_HeapBufferOverflow (pBadBuffer, wLength); delete[] pBadBuffer; }
     else if (wLength >= 10000 && wLength <= 90000) { hit_wiki(wLength); delete[] pBadBuffer; }
     else { call_sprintf(pBadBuffer); delete[] pBadBuffer; }
 

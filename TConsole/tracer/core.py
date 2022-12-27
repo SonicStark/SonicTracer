@@ -1,3 +1,4 @@
+import os
 import typing
 import time
 
@@ -116,12 +117,13 @@ class TracerCoreRunner:
             self.FixArgs[21100] = "-TrCutName"
             self.FixArgs[21101] = "%s;"%tcutn
 
+        self._n_workers = num_workers
         self.wPool = ParallelWorker(self.FixArgs, num_workers)
         self.rList = []
         self.wDone = False
 
     def apply(self, GenVarArgs :typing.Generator[None,None,tuple],
-        stdin  :bool =False,
+        stdin  :bool,
         output :bool =False,
         timeout :typing.Optional[int] =None
     ) -> None:
@@ -205,3 +207,80 @@ class TracerCoreRunner:
             for i in range(len(self.rList)):
                 self.rlog.debug("Access job %d", i)
                 yield self.rList[i].get()
+
+    def DefaultGenVarArgs(self,
+        log_dir_path :str,
+
+        tool_DatPath :typing.List[str],
+        tool_SymPath :typing.Optional[typing.List[str]],
+
+        target_args_var :typing.Optional[typing.List[str]],
+        target_stdin    :typing.Optional[typing.List[typing.BinaryIO]]
+    ) -> typing.Generator[None,None,tuple]:
+        """ Default `GenVarArgs` which can be used for `self.apply`
+
+        Calling `self.apply` requires a generator. Here we provide a
+        default implementation if you don't know how to make one.
+        It accepts several lists and same index means in same yield.
+        Different workers rather than jobs will be assiged with
+        different log files, so we can avoid resource conflicts
+        with fewer file creation.
+
+        To simplify, we DO NOT check the validity of those parameters
+        here but your own implementation should consider this issue.
+
+        Parameters
+        ----------
+        log_dir_path:
+            Path of the directory used to store logs from Pin and PinTool.
+        tool_DatPath:
+            Argument category 21211. Expects a non-empty list.
+        tool_SymPath:
+            Argument category 21311. Pass `None` if not need this arg.
+            Or it expects a list whose length equals to `tool_DatPath`.
+        target_args_var:
+            Argument category 60000. Pass `None` if not need this arg.
+            Or it expects a list whose length equals to `tool_DatPath`.
+        target_stdin:
+            A list of file objects that need to be assigned
+            to the yields. Pass `None` if nothing to assign.
+            Or it must have same length with `tool_DatPath`.
+        """
+        lst_info = []
+        lst_info.append(tool_DatPath)
+        __len_or_non = lambda L: len(L) if (L is not None) else None
+        lst_info.append(__len_or_non(tool_SymPath))
+        lst_info.append(__len_or_non(target_args_var))
+        lst_info.append(__len_or_non(target_stdin))
+        for i in lst_info:
+            if (i is not None) and (i != lst_info[0]):
+                err_s = "Unmatched length: " \
+                    "DatPath has %d but it has %d"%(lst_info[0],i)
+                self.rlog.error(err_s)
+                raise IndexError(err_s)
+
+        log_res_pin  = []
+        log_res_tool = []
+        time_s = time.strftime("%y-%m-%d-%H-%M-%S.log", time.localtime())
+        mlen = len(str(self._n_workers))
+        for i in range(self._n_workers):
+            log_res_pin.append(os.path.join(log_dir_path, 
+                "TConsole-pin{}-{}".format(str(i+1).zfill(mlen), time_s)))
+            log_res_tool.append(os.path.join(log_dir_path, 
+                "TConsole-tool{}-{}".format(str(i+1).zfill(mlen), time_s)))
+
+        for i in range(lst_info[0]):
+            VarArgs = {
+                10111 : log_res_pin [i%self._n_workers],
+                20111 : log_res_tool[i%self._n_workers],
+                21211 : tool_DatPath[i]
+            }
+            if (tool_SymPath is not None):
+                VarArgs[21310] = "-TrSymPath"
+                VarArgs[21311] = tool_SymPath[i]
+            if (target_args_var is not None):
+                VarArgs[60000] = target_args_var[i]
+            if (target_stdin is not None):
+                yield (VarArgs, target_stdin[i])
+            else:
+                yield (VarArgs,)

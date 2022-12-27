@@ -1,6 +1,7 @@
 #include "calls.h"
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <stdlib.h>
 
 void hit_HeapBufferOverflow(char* pBuf, int wlen)
@@ -102,7 +103,20 @@ int hit_wiki(int id)
     return iret;
 }
 
-void try_override_wlen(int* pwlen) {
+void using_wLength(int wlen)
+{
+    char* pBadBuffer = new char[128];
+
+    if      (wlen >= 66  && wlen <= 88 ) { hit_HeapUseAfterFree   (pBadBuffer, wlen); }
+    else if (wlen >= 99  && wlen <= 666) { hit_HeapBufferOverflow (pBadBuffer, wlen); delete[] pBadBuffer; }
+    else if (wlen >= 10000 && wlen <= 90000) { hit_wiki(wlen); delete[] pBadBuffer; }
+    else { call_sprintf(pBadBuffer); delete[] pBadBuffer; }
+}
+
+
+#ifndef USE_LLVM_LIBFUZZER_STYLE
+/////////////////////// Normal entry ///////////////////////
+void override_wLength(int* pwlen) {
     using namespace std;
     cout << " => try to override wLength=" << *pwlen << " ";
     if (*pwlen == 0) {
@@ -119,15 +133,31 @@ int main(int argc, char* argv[])
     int wLength;
     if (argc != 2) { puts(" => argc exit"); return 0; }
     else { wLength = atoi(argv[1]); }
-    try_override_wlen(&wLength);
-
-    char* pBadBuffer = new char[128];
-
-    if      (wLength >= 66  && wLength <= 88 ) { hit_HeapUseAfterFree   (pBadBuffer, wLength); }
-    else if (wLength >= 99  && wLength <= 666) { hit_HeapBufferOverflow (pBadBuffer, wLength); delete[] pBadBuffer; }
-    else if (wLength >= 10000 && wLength <= 90000) { hit_wiki(wLength); delete[] pBadBuffer; }
-    else { call_sprintf(pBadBuffer); delete[] pBadBuffer; }
+    override_wLength(&wLength);
+    using_wLength(wLength);
 
     std::cout << " => normal exit" << std::endl;
     return 0;
 }
+////////////////////////////////////////////////////////////
+#else
+////////////////// LLVMFuzzerTestOneInput //////////////////
+void override_wLength(int* pwlen, const uint8_t *Data, size_t Size) {
+    char* pwlen_s = (char*) calloc(1+Size, sizeof(char));
+    memcpy(pwlen_s, Data, Size);
+    *pwlen = atoi(pwlen_s);
+    free(pwlen_s);
+}
+
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
+    std::cout << " => LLVMFuzzerTestOneInput"; std::cout.flush();
+
+    int wLength;
+    override_wLength(&wLength, Data, Size);
+    using_wLength(wLength);
+
+    std::cout << " => TestOneInput exit" << std::endl;
+    return 0;
+}
+////////////////////////////////////////////////////////////
+#endif

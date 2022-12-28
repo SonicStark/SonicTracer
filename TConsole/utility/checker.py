@@ -75,6 +75,24 @@ def check_all_file_from_dir(
         MY_LOGGER.info("Get {} tagged files in {}".format(all_file_cnt, repr(root_dir_path)))
         return all_file_path , all_file_tag
 
+def check_all_file_hierarchy(flist :typing.List[str]) -> typing.Dict[str,int]:
+    """ Get dir hierarchy of files in the list
+
+    Will return a dict in which the key is dir paths
+    of those files and the value is file num in that dir.
+    """
+    try:
+        ret_dict = {}
+        for fp in flist:
+            dname = os.path.dirname(fp)
+            if dname in ret_dict:
+                ret_dict[dname] += 1
+            else:
+                ret_dict[dname] = 0
+        return ret_dict
+    except BaseException as be:
+        raise RuntimeError("CANNOT get file hierarchy") from be
+
 def check_file_executable(fpath :str) -> bool:
     """ Check whether the file is executable
     """

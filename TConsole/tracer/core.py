@@ -5,6 +5,7 @@ import time
 from .worker import ParallelWorker
 from ..utility.log import GIVE_MY_LOGGER
 from ..utility.text import dict2str
+from ..utility.checker import check_file_writable
 
 class TracerCoreRunner:
     """ A wrapper for running TracerCore
@@ -271,6 +272,12 @@ class TracerCoreRunner:
                 "TConsole-pin{}-{}".format(str(i+1).zfill(mlen), time_s)))
             log_res_tool.append(os.path.join(log_dir_path, 
                 "TConsole-tool{}-{}".format(str(i+1).zfill(mlen), time_s)))
+            if not (check_file_writable(log_res_pin[-1] ) and \
+                    check_file_writable(log_res_tool[-1])):
+                err_s = "Log file resource "
+                "%s or %s is unavailable"%(log_res_pin[-1], log_res_tool[-1])
+                self.rlog.error(err_s)
+                raise IOError(err_s)
 
         for i in range(lst_info[0]):
             VarArgs = {

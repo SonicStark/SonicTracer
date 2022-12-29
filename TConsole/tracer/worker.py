@@ -113,6 +113,7 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
                             p_.communicate(timeout=timeout_sec)
                     except subprocess.TimeoutExpired:
                         p_.kill()
+                        bout , berr = p_.communicate()
                         return (TIMEOUT_KILL_CODE, bout, berr)
                     else:
                         return (p_.returncode, bout, berr)
@@ -129,6 +130,7 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
                             p_.communicate(timeout=timeout_sec)
                     except subprocess.TimeoutExpired:
                         p_.kill()
+                        bout , berr = p_.communicate()
                         return (TIMEOUT_KILL_CODE, bout, berr)
                     else:
                         return (p_.returncode, bout, berr)

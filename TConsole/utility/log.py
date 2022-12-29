@@ -4,6 +4,7 @@ import time
 import logging
 
 from ..config import CONFIG_PATH
+from ..config import CONFIG_BASIC
 
 DEFAULT_LOG_LEVEL = logging.INFO
 
@@ -31,7 +32,10 @@ def GIVE_MY_LOGGER(name :str ="TConsole_root") -> logging.Logger:
             FIL.setFormatter(FMT)
             LGR.addHandler(FIL)
 
-        LGR.setLevel(DEFAULT_LOG_LEVEL)
+        if isinstance(CONFIG_BASIC["LOG_LEVEL"], int):
+            LGR.setLevel(CONFIG_BASIC["LOG_LEVEL"])
+        else:
+            LGR.setLevel(DEFAULT_LOG_LEVEL)
     return LGR
 
 if __name__ == "__main__":

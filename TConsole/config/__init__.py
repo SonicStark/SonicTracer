@@ -19,6 +19,7 @@ def __GET_CONFIG(fname_no_ext :str) -> dict:
     return config_dict
 
 ######################################################
+CONFIG_BASIC  = __GET_CONFIG("basic")
 CONFIG_FILTER = __GET_CONFIG("filter")
 CONFIG_PATH   = __GET_CONFIG("path")
 ######################################################

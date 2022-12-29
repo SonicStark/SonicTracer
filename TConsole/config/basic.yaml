@@ -1,0 +1,12 @@
+# Global logging level (int)
+# See https://docs.python.org/3.8/library/logging.html#logging-levels
+#
+# > | Level    | value |
+# > |----------|-------|
+# > | CRITICAL |  50   | 
+# > | ERROR    |  40   | 
+# > | WARNING  |  30   | 
+# > | INFO     |  20   | 
+# > | DEBUG    |  10   |
+# > | NOTSET   |   0   |
+LOG_LEVEL: 10

@@ -183,9 +183,6 @@ class TracerCoreRunner:
         job_wait = list(range(job_num))
 
         while (len(job_wait) > 0):
-            self.rlog.info("Running: %d, Progress: %d/%d", 
-                len(job_wait), len(job_done), job_num)
-
             job_wait_new = []
             for i in job_wait:
                 if (self.rList[i].ready() is True):
@@ -193,6 +190,9 @@ class TracerCoreRunner:
                 else:
                     job_wait_new.append(i)
             job_wait = job_wait_new
+
+            self.rlog.info("Running: %d, Progress: %d/%d", 
+                len(job_wait), len(job_done), job_num)
             time.sleep(refresh_sec)
 
         self.wPool.join()
@@ -237,6 +237,9 @@ class TracerCoreRunner:
         ----------
         log_dir_path:
             Path of the directory used to store logs from Pin and PinTool.
+            Depending on the different running situations of pin, those log
+            files may not be created. (See https://software.intel.com/sites/landingpage/pintool/docs/98650/Pin/doc/html/index.html)
+            But you must specify a reliable path just in case.
         tool_DatPath:
             Argument category 21211. Expects a non-empty list.
         tool_SymPath:
@@ -251,7 +254,7 @@ class TracerCoreRunner:
             Or it must have same length with `tool_DatPath`.
         """
         lst_info = []
-        lst_info.append(tool_DatPath)
+        lst_info.append(len(tool_DatPath))
         __len_or_non = lambda L: len(L) if (L is not None) else None
         lst_info.append(__len_or_non(tool_SymPath))
         lst_info.append(__len_or_non(target_args_var))

@@ -2,7 +2,7 @@ import typing
 import subprocess
 import multiprocessing.pool
 
-TIMEOUT_KILL_CODE = int(b"TIM".hex(), 16)
+TIMEOUT_KILL_CODE = int(b"TIME".hex(), 16)
 
 class ParallelWorker(multiprocessing.pool.ThreadPool):
     """ Parallel Worker Interface

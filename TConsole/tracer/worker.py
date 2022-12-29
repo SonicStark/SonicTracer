@@ -2,6 +2,8 @@ import typing
 import subprocess
 import multiprocessing.pool
 
+TIMEOUT_KILL_CODE = int(b"TIM".hex(), 16)
+
 class ParallelWorker(multiprocessing.pool.ThreadPool):
     """ Parallel Worker Interface
 
@@ -82,7 +84,8 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
                         p_.wait(timeout=timeout_sec)
                     except subprocess.TimeoutExpired:
                         p_.kill()
-                    finally:
+                        return (TIMEOUT_KILL_CODE,)
+                    else:
                         return (p_.returncode,)
                 ###############################################
             else:
@@ -94,7 +97,8 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
                         p_.wait(timeout=timeout_sec)
                     except subprocess.TimeoutExpired:
                         p_.kill()
-                    finally:
+                        return (TIMEOUT_KILL_CODE,)
+                    else:
                         return (p_.returncode,)
                 ###############################################
         else:
@@ -109,7 +113,8 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
                             p_.communicate(timeout=timeout_sec)
                     except subprocess.TimeoutExpired:
                         p_.kill()
-                    finally:
+                        return (TIMEOUT_KILL_CODE, bout, berr)
+                    else:
                         return (p_.returncode, bout, berr)
                 ###############################################
             else:
@@ -124,7 +129,8 @@ class ParallelWorker(multiprocessing.pool.ThreadPool):
                             p_.communicate(timeout=timeout_sec)
                     except subprocess.TimeoutExpired:
                         p_.kill()
-                    finally:
+                        return (TIMEOUT_KILL_CODE, bout, berr)
+                    else:
                         return (p_.returncode, bout, berr)
                 ###############################################
         

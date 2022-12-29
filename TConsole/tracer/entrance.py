@@ -2,9 +2,9 @@ import os
 import sys
 import typing
 
+from .worker import TIMEOUT_KILL_CODE
 from .core import TracerCoreRunner
 from ..utility.log import GIVE_MY_LOGGER
-from ..utility.text import dict2str
 from ..utility.checker import check_all_file_from_dir
 from ..utility.checker import check_all_file_hierarchy
 from ..utility.checker import check_file_executable
@@ -244,20 +244,47 @@ class CoreLauncher:
         results = self.runner.access()
         if (results is None):
             self.clog.warning("Unable to land. Mayday! Mayday!")
-        else:
-            self.clog.info("Have a safe landing.")
-            rcode = {}
-            for ret in results:
-                if ret[0] in rcode:
-                    rcode[ret[0]] += 1
+            return
+        self.clog.info("Have a safe landing.")
+        
+        rcode = {0: [], TIMEOUT_KILL_CODE: []}
+        rindx = 0
+        for ret in results:
+            if (ret[0] == 0):
+                rcode[0].append(rindx)
+            elif (ret[0] == TIMEOUT_KILL_CODE):
+                rcode[TIMEOUT_KILL_CODE].append(rindx)
+            else:
+                if (ret[0] in rcode):
+                    rcode[ret[0]].append(rindx)
                 else:
-                    rcode[ret[0]] = 1
-                if self.worker_dmp:
-                    self.clog.debug("JOB_STDOUT>>>%s<<<JOB_STDOUT",
-                        ret[1].decode(sys.stdout.encoding))
-                    self.clog.debug("JOB_STDERR>>>%s<<<JOB_STDERR",
-                        ret[2].decode(sys.stderr.encoding))
-            self.clog.info("Popen.returncode statistics: %s", dict2str(rcode))
+                    rcode[ret[0]] = [rindx,]
+            rindx += 1
+            if self.worker_dmp:
+                self.clog.debug("JOB_STDOUT>>>%s<<<JOB_STDOUT",
+                    ret[1].decode(sys.stdout.encoding))
+                self.clog.debug("JOB_STDERR>>>%s<<<JOB_STDERR",
+                    ret[2].decode(sys.stderr.encoding))
+        
+        assert (1+rindx == len(self.fsrc))
+        for rc in rcode:
+            if (rc == 0):
+                continue
+            elif (rc == TIMEOUT_KILL_CODE):
+                self.clog.info("Input of timeout: \n  %s", 
+                    "\n  ".join([self.fsrc[idx]  for idx in rcode[rc]]))
+            else:
+                self.clog.info("Input of code-%d: \n  %s", rc, 
+                    "\n  ".join([self.fsrc[idx]  for idx in rcode[rc]]))
+        
+        s_attach = ""
+        if (len(rcode) > 2):
+            for rc in rcode:
+                if (rc == 0) or (rc == TIMEOUT_KILL_CODE):
+                    continue
+                s_attach += ", code-{}={}".format(rc, len(rcode[rc]))
+        self.clog.info("Job report: total %d [success=%d, timeout=%d%s]", 
+            (1+rindx), len(rcode[0]), len(rcode[TIMEOUT_KILL_CODE]), s_attach)
 
     def __del__(self) -> None:
         """ Try to close those files in open

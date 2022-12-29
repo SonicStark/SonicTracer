@@ -88,7 +88,7 @@ def check_all_file_hierarchy(flist :typing.List[str]) -> typing.Dict[str,int]:
             if dname in ret_dict:
                 ret_dict[dname] += 1
             else:
-                ret_dict[dname] = 0
+                ret_dict[dname] = 1
         return ret_dict
     except BaseException as be:
         raise RuntimeError("CANNOT get file hierarchy") from be

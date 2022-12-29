@@ -318,8 +318,9 @@ class CoreLauncher:
         self.clog.info("Have a safe landing.")
         
         rcode = {TIMEOUT_KILL_CODE: []}
-        rindx = 0
+        rindx = -1
         for ret in results:
+            rindx += 1
             if (ret[0] == TIMEOUT_KILL_CODE):
                 rcode[TIMEOUT_KILL_CODE].append(rindx)
             else:
@@ -328,11 +329,10 @@ class CoreLauncher:
                 else:
                     rcode[ret[0]] = [rindx,]
             if self.worker_dmp:
-                self.clog.debug("JOB%d_STDOUT>>>%s<<<JOB%d_STDOUT",
+                self.clog.debug("JOB%d_STDOUT >>>%s<<< JOB%d_STDOUT",
                     rindx, ret[1].decode(sys.stdout.encoding), rindx)
-                self.clog.debug("JOB%d_STDERR>>>%s<<<JOB%d_STDERR",
+                self.clog.debug("JOB%d_STDERR >>>%s<<< JOB%d_STDERR",
                     rindx, ret[2].decode(sys.stderr.encoding), rindx)
-            rindx += 1
         
         assert (1+rindx == len(self.fsrc)) #Input file num should equals to job num
         for rc in rcode:
@@ -341,7 +341,7 @@ class CoreLauncher:
             else:
                 __s = "code-%d"%rc
             self.clog.info("Input of %s:\n%s", __s, "\n".join(
-                ["JOB%d<=%s"%(idx, self.fsrc[idx])  for idx in rcode[rc] ]))
+                ["Job%d <= %s"%(idx, self.fsrc[idx])  for idx in rcode[rc] ]))
         
         s_attach = ""
         if (len(rcode) > 1):

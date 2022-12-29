@@ -97,7 +97,7 @@ def check_file_executable(fpath :str) -> bool:
     """ Check whether the file is executable
     """
     if (os.path.isfile(fpath) is True):
-        return os.access(fpath, os.X_OK)
+        return os.access(fpath, os.R_OK|os.X_OK)
     else:
         return False
 
@@ -115,4 +115,12 @@ def check_file_writable(fpath :str) -> bool:
     if (os.path.isfile(fpath) is True):
         return os.access(fpath, os.W_OK)
     else:
-        return os.access(os.path.dirname(fpath), os.W_OK)
+        return os.access(os.path.dirname(fpath), os.R_OK|os.W_OK|os.X_OK)
+
+def check_dir_access(dpath :str) -> bool:
+    """ Check access permission of the dir is at least 700
+    """
+    if (os.path.isdir(dpath) is True):
+        return os.access(dpath, os.R_OK|os.W_OK|os.X_OK)
+    else:
+        return False

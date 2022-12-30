@@ -2,6 +2,62 @@
 #include "cli.h"
 
 /**
+ * Dump symbol info of the input routine.
+ * When macro `DISABLE_DUMP_SECTON_INFO` is 
+ * not defined, the info string is in a format like
+ * "<section name>+<offset>:<routine name>".
+ * Otherwise the string equals to name of
+ * the routine. 
+ * If a `RTN_Invalid()` is given, the string is "".
+ * @param s_recv recieves the info string
+ * @param rtni Routine Object
+ */
+void DumpSymInfo(std::string &s_recv, RTN &rtni)
+{
+    if (!RTN_Valid(rtni)) { s_recv = ""; return; }
+#ifndef DISABLE_DUMP_SECTON_INFO
+    SEC rtn_inside = RTN_Sec(rtni);
+    s_recv =  SEC_Name(rtn_inside);
+    s_recv += "+";
+    s_recv += hexstr(RTN_Address(rtni) - SEC_Address(rtn_inside));
+    s_recv += ":";
+    s_recv += RTN_Name(rtni);
+#else
+    s_recv = RTN_Name(rtni);
+#endif
+}
+
+/**
+ * Dump symbol info of the routine which the 
+ * input address belongs to. 
+ * When macro `DISABLE_DUMP_SECTON_INFO` is 
+ * not defined, the info string is in a format like
+ * "<section name>+<offset>:<routine name>".
+ * Otherwise the string equals to name of
+ * the routine. 
+ * Will be "" if no valid routine is found.
+ * @param s_recv Recieves the info string
+ * @param addr memory address
+ */
+void DumpSymInfo(std::string &s_recv, ADDRINT addr)
+{
+#ifndef DISABLE_DUMP_SECTON_INFO
+    PIN_LockClient();
+    RTN rtn_found = RTN_FindByAddress(addr);
+    if (!RTN_Valid(rtn_found)) { PIN_UnlockClient(); s_recv = ""; return; }
+    SEC rtn_inside = RTN_Sec(rtn_found);
+    s_recv =  SEC_Name(rtn_inside);
+    s_recv += "+";
+    s_recv += hexstr(RTN_Address(rtn_found) - SEC_Address(rtn_inside));
+    s_recv += ":";
+    s_recv += RTN_Name(rtn_found);
+    PIN_UnlockClient();
+#else
+    s_recv = RTN_FindNameByAddress(addr);
+#endif
+}
+
+/**
  * Whether the name needs to be screened.
  * If sth unexpected occurs, false is returned by default.
  * @param SN name string

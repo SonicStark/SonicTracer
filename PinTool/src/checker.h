@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 
+void DumpSymInfo(std::string &s_recv, ADDRINT addr);
+void DumpSymInfo(std::string &s_recv, RTN    &rtni);
+
 bool IsBlockedName(const std::string &SN);
 bool IsBlocked(const std::string &name);
 bool IsBlocked(ADDRINT            addr);

@@ -64,7 +64,7 @@ VOID AnalyseINS(INS Iparam, VOID *Vparam)
                         IARG_ADDRINT, ins_addr,
                     IARG_END);
             } else {
-                std::string ins_name = RTN_FindNameByAddress(ins_addr);
+                std::string ins_name; DumpSymInfo(ins_name, ins_addr);
                 INS_InsertCall(Iparam, IPOINT_BEFORE, AFUNPTR(SaveDatSym),
                         IARG_ADDRINT, ins_addr,
                         IARG_UINT64,  PIN_ThreadUid(),
@@ -93,7 +93,7 @@ VOID AnalyseBBL(TRACE Tparam, VOID *Vparam)
                         IARG_ADDRINT, bbl_addr,
                     IARG_END);
                 } else {
-                    std::string bbl_name = RTN_FindNameByAddress(bbl_addr);
+                    std::string bbl_name; DumpSymInfo(bbl_name, bbl_addr);
                     BBL_InsertCall(B__, IPOINT_BEFORE, AFUNPTR(SaveDatSym),
                         IARG_ADDRINT, bbl_addr,
                         IARG_UINT64,  PIN_ThreadUid(),
@@ -121,7 +121,7 @@ VOID AnalyseCAL(RTN Rparam, VOID *Vparam)
                         IARG_ADDRINT, RTN_Address(Rparam), 
                     IARG_END);
             } else {
-                std::string rname = RTN_Name(Rparam);
+                std::string rname; DumpSymInfo(rname, Rparam);
                 RTN_Open(Rparam);
                 RTN_InsertCall(Rparam, IPOINT_BEFORE, AFUNPTR(SaveDatSym),
                         IARG_ADDRINT, RTN_Address(Rparam),

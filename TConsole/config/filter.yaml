@@ -24,6 +24,7 @@ KEYWORD_BLOCKED:
     - 'elf_syminfo'
     - 'elf_try_debugfile'
     - 'elf_uncompress_zdebug'
+    - 'elf_zlib_inflate_'
     - 'read_address'
     - 'read_attribute'
     - 'read_byte'

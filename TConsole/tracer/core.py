@@ -193,7 +193,8 @@ class TracerCoreRunner:
 
             self.rlog.info("Running: %d, Progress: %d/%d", 
                 len(job_wait), len(job_done), job_num)
-            time.sleep(refresh_sec)
+            if (0 != len(job_wait)):
+                time.sleep(refresh_sec)
 
         self.wPool.join()
         self.wDone = True

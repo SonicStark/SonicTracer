@@ -339,7 +339,7 @@ class CoreLauncher:
             if (rc == TIMEOUT_KILL_CODE):
                 __s = "timeout"
             else:
-                __s = "code-%d"%rc
+                __s = "code{%d}"%rc
             self.clog.info("Input of %s:\n%s", __s, "\n".join(
                 ["Job%d <= %s"%(idx, self.fsrc[idx])  for idx in rcode[rc] ]))
         
@@ -348,7 +348,7 @@ class CoreLauncher:
             for rc in rcode:
                 if (rc == TIMEOUT_KILL_CODE):
                     continue
-                s_attach += ", code-%d=%d"%(rc, len(rcode[rc]))
+                s_attach += ", code{%d}=%d"%(rc, len(rcode[rc]))
         self.clog.info("Report: total %d [timeout=%d%s]", 
             (1+rindx), len(rcode[TIMEOUT_KILL_CODE]), s_attach)
 

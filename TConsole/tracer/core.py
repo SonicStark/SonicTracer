@@ -1,10 +1,10 @@
 import os
 import typing
 import time
+import inspect
 
 from .worker import ParallelWorker
 from ..utility.log import GIVE_MY_LOGGER
-from ..utility.text import dict2str
 from ..utility.checker import check_file_writable
 
 class TracerCoreRunner:
@@ -167,7 +167,8 @@ class TracerCoreRunner:
             )
             self.rList.append(
                 self.wPool.apply_async(job_func))
-            self.rlog.debug("Apply => %s", dict2str(self.wPool.args_common))
+            self.rlog.debug("Apply => %s", str(
+                inspect.getclosurevars(job_func).nonlocals["arg_lst"]))
     
     def wait(self, refresh_sec :int =5) -> None:
         """ Wait for all jobs to complete

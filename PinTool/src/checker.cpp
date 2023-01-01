@@ -48,7 +48,7 @@ void DumpSymInfo(std::string &s_recv, ADDRINT addr)
     SEC rtn_inside = RTN_Sec(rtn_found);
     s_recv =  SEC_Name(rtn_inside);
     s_recv += "+";
-    s_recv += hexstr(RTN_Address(rtn_found) - SEC_Address(rtn_inside));
+    s_recv += hexstr(addr - SEC_Address(rtn_inside));
     s_recv += ":";
     s_recv += RTN_Name(rtn_found);
     PIN_UnlockClient();

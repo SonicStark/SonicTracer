@@ -88,6 +88,24 @@ static int  DRIVER_RunFromFile(int argc, char* argv[]) {
     return 0;
 }
 
+#ifdef DRIVER_LINK_LLVM_LIBFUZZER_STYLE
+__attribute__((weak)) int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
+    printf("[X] Define 'int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size)' "
+           "in your code to make it work. ");
+    // Unlike in libFuzzer, the returned values are useless 
+    // here except those other than 0 will be printed to screen. 
+    // See https://llvm.org/docs/LibFuzzer.html#rejecting-unwanted-inputs
+    return 0;
+}
+
+__attribute__((weak)) int LLVMFuzzerInitialize(int *argc, char ***argv) {
+    // The returned values are useless but it is suggested that keep it 0
+    // just like the usage in libFuzzer.
+    // See https://llvm.org/docs/LibFuzzer.html#startup-initialization
+    return 0;
+}
+#endif
+
 /**
  * #### IF (argc > 1)
  *   Firstly try to use the last parameter as
@@ -97,9 +115,20 @@ static int  DRIVER_RunFromFile(int argc, char* argv[]) {
  *   Read from stdin.
  */
 int main(int argc, char* argv[]) {
+    #ifdef DRIVER_LINK_LLVM_LIBFUZZER_STYLE
+    LLVMFuzzerInitialize(&argc, &argv);
+    #endif
     return DRIVER_RunFromFile(argc, argv);
 }
 
+#ifdef DRIVER_LINK_LLVM_LIBFUZZER_STYLE
+static void DRIVER_RunOneInput(const uint8_t* pBuf, size_t vLen) {
+    int ret = LLVMFuzzerTestOneInput(pBuf, vLen);
+    if (ret != 0) {
+        printf("[!] LLVMFuzzerTestOneInput returned '%d' instead of '0'", ret);
+    }
+}
+#else
 /**
  * Your fuzzing code definitions
  * 
@@ -109,3 +138,4 @@ int main(int argc, char* argv[]) {
 static void DRIVER_RunOneInput(const uint8_t* pBuf, size_t vLen) {
     ;
 }
+#endif
